@@ -1,0 +1,179 @@
+name: docker-build
+
+on:
+  workflow_dispatch:
+    inputs:
+      REPO_NAME:
+        description: "仓库名"
+        required: false
+        type: choice
+        options:
+          - "debian13"
+          - "python3"
+        default: "debian13"
+      TAG:
+        description: "Tag名"
+        required: false
+        type: string
+        default: "tsinghua-source"
+      GIT_URL:
+        description: "Git地址"
+        required: false
+        type: string
+        default: "ssh://git@gitea.rotigue.cn:50832/cloud/ddns.git"
+      PUSH_BUILDER_HOST:
+        description: "推送manifest机器"
+        required: false
+        type: string
+        default: "43.163.232.184"
+      PUSH_LATEST:
+        description: "是否推送latest"
+        required: false
+        type: string
+        default: "true"
+      NEED_DEPLOY:
+        description: "是否部署"
+        required: false
+        type: string
+        default: "true"
+      DEPLOY_HOST:
+        description: "部署机器"
+        required: false
+        type: string
+        default: "192.168.60.100"
+      DEPLOY_COMPOSE_PATH:
+        description: "部署compose路径"
+        required: false
+        type: string
+        default: "/srv/dev-disk-by-uuid-5811066f-2be8-406b-bf17-9879d60c089f/nas/app/compose/home"
+
+jobs:
+  build-amd64:
+    runs-on: nas
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
+      volumes:
+        - /srv/dev-disk-by-uuid-5811066f-2be8-406b-bf17-9879d60c089f/nas/app/img-builder/m2:/root/.m2
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Docker Build
+        run: |
+          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
+          git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
+          cd ${{ inputs.REPO_NAME }}/docker-build
+          chmod +x ./build.sh
+          ./build.sh -x -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }}
+
+  sync-amd64:
+    runs-on: nas
+    needs:
+      - build-amd64
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
+    steps:
+      - name: Docker push
+        run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
+          '
+          docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          '
+
+  build-arm64:
+    runs-on: bypath
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
+      volumes:
+        - /root/docker/app/img-builder/m2:/root/.m2
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Docker Build
+        run: |
+          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
+          git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
+          cd ${{ inputs.REPO_NAME }}/docker-build
+          chmod +x ./build.sh
+          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }}
+
+  sync-arm64:
+    runs-on: nas
+    needs:
+      - build-arm64
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
+    steps:
+      - name: Docker push
+        run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
+          '
+          docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
+          docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
+          docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
+          '
+
+  manifest:
+    needs:
+      - sync-amd64
+      - sync-arm64
+    runs-on: nas
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
+    steps:
+      - name: Docker push
+        run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
+          '
+          rm -rf ~/.docker/manifests
+          mkdir -p ~/.docker/manifests
+          docker manifest create rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
+          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
+          '
+
+      - name: Push Latest
+        if: ${{ inputs.PUSH_LATEST == 'true' }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
+          '
+          rm -rf ~/.docker/manifests
+          mkdir -p ~/.docker/manifests
+          docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
+          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
+          '
+
+      - name: Delete Tags
+        run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
+          '
+          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
+              -H "Content-Type: application/json" \
+              -d "{\"username\":\"${{ secrets.DOCKER_USERNAME }}\",\"password\":\"${{ secrets.DOCKER_PASSWORD }}\"}" \
+              | jq -r .token)
+          curl -X DELETE \
+              -H "Authorization: JWT $TOKEN" \
+              https://hub.docker.com/v2/repositories/rotigue/${{ inputs.REPO_NAME }}/tags/${{ inputs.TAG }}-arm64/
+          curl -X DELETE \
+              -H "Authorization: JWT $TOKEN" \
+              https://hub.docker.com/v2/repositories/rotigue/${{ inputs.REPO_NAME }}/tags/${{ inputs.TAG }}-amd64/
+          '
+
+  deploy:
+    needs:
+      - manifest
+    runs-on: nas
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
+    steps:
+      - name: Docker deploy
+        if: ${{ inputs.NEED_DEPLOY == 'true' }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.DEPLOY_HOST }} \
+          '
+          cd ${{ inputs.DEPLOY_COMPOSE_PATH }}
+          docker compose pull ${{ inputs.REPO_NAME }}
+          docker compose up -d ${{ inputs.REPO_NAME }}
+          '
