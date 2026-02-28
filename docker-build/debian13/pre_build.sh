@@ -1,8 +1,7 @@
 #!/bin/bash
 
 before_build() {
-    echo "把ddns.py物料复制过来"
-    cp ../ddns.py ./
+    echo "构建前操作..."
 }
 
 pre_build() {

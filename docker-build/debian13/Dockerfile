@@ -1,10 +1,18 @@
-FROM registry.cn-hangzhou.aliyuncs.com/rotigue/python3:py313
+FROM debian:trixie-slim
 
-RUN mkdir -p /app/ddns/bin \
-    && pip3 install -v -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple pymysql paramiko \
-    && pip3 cache purge \
-    && rm -rf /tmp/pip-*
+ENV TZ=Asia/Shanghai
 
-COPY ddns.py /app/ddns/bin/
-
-ENTRYPOINT ["python3", "/app/ddns/bin/ddns.py", "--use-env"]
+RUN echo "Types: deb" > /etc/apt/sources.list.d/debian.sources \
+    && echo "URIs: http://mirrors.tuna.tsinghua.edu.cn/debian" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "Suites: trixie trixie-updates trixie-backports" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "Components: main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "Types: deb" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "URIs: http://mirrors.tuna.tsinghua.edu.cn/debian-security" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "Suites: trixie-security" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "Components: main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/debian.sources \
+    && echo "Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg" >> /etc/apt/sources.list.d/debian.sources \
+    && apt update \
+    && apt install procps -y \
+    && rm -rf /var/lib/apt/lists/*

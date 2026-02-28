@@ -20,7 +20,7 @@ on:
         description: "Git地址"
         required: false
         type: string
-        default: "ssh://git@gitea.rotigue.cn:50832/cloud/ddns.git"
+        default: "ssh://git@gitea.rotigue.cn:50832/cloud/image-build.git"
       PUSH_BUILDER_HOST:
         description: "推送manifest机器"
         required: false
@@ -30,12 +30,12 @@ on:
         description: "是否推送latest"
         required: false
         type: string
-        default: "true"
+        default: "false"
       NEED_DEPLOY:
         description: "是否部署"
         required: false
         type: string
-        default: "true"
+        default: "false"
       DEPLOY_HOST:
         description: "部署机器"
         required: false
@@ -53,7 +53,6 @@ jobs:
     container:
       image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
       volumes:
-        - /srv/dev-disk-by-uuid-5811066f-2be8-406b-bf17-9879d60c089f/nas/app/img-builder/m2:/root/.m2
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
       - name: Docker Build
@@ -85,7 +84,6 @@ jobs:
     container:
       image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
       volumes:
-        - /root/docker/app/img-builder/m2:/root/.m2
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
       - name: Docker Build
