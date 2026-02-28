@@ -50,7 +50,7 @@ if ! ${arch_map["arm64"]} && ! ${arch_map["amd64"]} && [ "$push" != true ]; then
 fi
 
 if [ -f "./${repo}/pre_build.sh" ]; then
-    source ./pre_build.sh
+    source ./${repo}/pre_build.sh
 else
     # 如果没有定义，给个空函数，避免报错
     before_build() { :; }
