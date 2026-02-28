@@ -80,7 +80,7 @@ jobs:
           '
 
   build-arm64:
-    runs-on: bypath
+    runs-on: bypass
     container:
       image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
       volumes:
