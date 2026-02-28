@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 if [ -f "./pre_build.sh" ]; then
     source ./pre_build.sh
