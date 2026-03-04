@@ -1,0 +1,6 @@
+.idea/
+__pycache__/
+reports/
+.venv*
+tmp/
+pytest.ini
