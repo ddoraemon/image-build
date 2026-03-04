@@ -16,7 +16,7 @@ on:
         description: "Tag名"
         required: false
         type: string
-        default: "tsinghua-source"
+        default: "untagged"
       GIT_URL:
         description: "Git地址"
         required: false
@@ -52,7 +52,7 @@ jobs:
   build-amd64:
     runs-on: nas
     container:
-      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:1.2
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
@@ -83,7 +83,7 @@ jobs:
   build-arm64:
     runs-on: bypass
     container:
-      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:1.2
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
