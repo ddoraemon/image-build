@@ -7,8 +7,6 @@ before_build() {
 pre_build() {
     local arch="$1"
     cd ./${repo}
-    apt update
-    apt install -y wget
     echo "当前要执行${arch}的构建前操作"
     echo "下载jdk1.8-${arch}.tar.gz"
     wget "http://public:Public123@192.168.60.100:8824/jdk/jdk1.8-${arch}.tar.gz"
