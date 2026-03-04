@@ -10,6 +10,7 @@ on:
         options:
           - "debian13"
           - "python3"
+          - "img-builder"
         default: "debian13"
       TAG:
         description: "Tag名"
