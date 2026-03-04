@@ -2,6 +2,8 @@
 set -euo pipefail
 set -x
 
+echo "当前基础构建镜像版本为 ---> ${VERSION}"
+
 if [ -f "./pre_build.sh" ]; then
     source ./pre_build.sh
 else
