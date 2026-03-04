@@ -69,7 +69,7 @@ build_and_push() {
   echo "Building $arch image..."
   pre_build "$arch"
 
-  docker buildx build --platform=linux/${arch} -f ${repo}/Dockerfile -t registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${image_tag} --provenance=false --sbom=false --push ./${repo}
+  docker buildx build --platform=linux/${arch} -f ${repo}/Dockerfile --build-arg VERSION=${tag} -t registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${image_tag} --provenance=false --sbom=false --push ./${repo}
 }
 
 # 构建选中的架构

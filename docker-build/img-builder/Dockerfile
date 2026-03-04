@@ -1,5 +1,8 @@
 FROM registry.cn-hangzhou.aliyuncs.com/rotigue/python3:py313
 
+ARG VERSION
+ENV VERSION=${VERSION}
+
 RUN apt update \
   && apt install -y supervisor openssh-server iputils-ping dnsutils telnet wget \
   && apt install -y ca-certificates curl \
