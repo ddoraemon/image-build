@@ -1,7 +1,7 @@
 FROM registry.cn-hangzhou.aliyuncs.com/rotigue/python3:py313
 
 RUN apt update \
-  && apt install -y supervisor openssh-server iputils-ping dnsutils telnet \
+  && apt install -y supervisor openssh-server iputils-ping dnsutils telnet wget \
   && apt install -y ca-certificates curl \
   && install -m 0755 -d /etc/apt/keyrings \
   && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
