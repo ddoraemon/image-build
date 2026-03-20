@@ -11,6 +11,7 @@ on:
           - "debian13"
           - "python3"
           - "img-builder"
+          - "freestyle"
         default: "debian13"
       TAG:
         description: "Tag名"
