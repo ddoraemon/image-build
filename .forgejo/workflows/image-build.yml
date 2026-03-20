@@ -31,12 +31,18 @@ on:
       PUSH_LATEST:
         description: "是否推送latest"
         required: false
-        type: string
+        type: choice
+        options:
+          - "true"
+          - "false"
         default: "false"
       NEED_DEPLOY:
         description: "是否部署"
         required: false
-        type: string
+        type: choice
+        options:
+          - "true"
+          - "false"
         default: "false"
       DEPLOY_HOST:
         description: "部署机器"
