@@ -53,7 +53,7 @@ on:
         description: "部署compose路径"
         required: false
         type: string
-        default: "/srv/dev-disk-by-uuid-5811066f-2be8-406b-bf17-9879d60c089f/nas/app/compose/home"
+        default: "/srv/dev-disk-by-uuid-870696b0-795d-459f-a3ae-c013e425e9a0/nas/app/compose/home"
 
 jobs:
   build-amd64:
