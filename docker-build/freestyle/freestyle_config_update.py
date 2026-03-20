@@ -17,7 +17,7 @@ def log_print(msg):
 class FreestyleConfig:
 
     def __init__(self):
-        self.config_file = "/home/admin/app/freestyle/config/config.yaml"
+        self.config_file = "/app/freestyle/config/config.yaml"
         self.config = yaml.safe_load(open(self.config_file).read())
 
     def get_external_controller_port(self):
@@ -51,7 +51,7 @@ class FreestyleConfig:
 
 def get_subscribe_config():
     url = os.environ.get("SUB_URL")
-    resp = requests.get(url, headers={"User-Agent": "ClashX/1.96.2 (com.west2online.ClashX; build:1.96.2; macOS 14.5.0) Alamofire/5.6.2"})
+    resp = requests.get(url, headers={"User-Agent": "ClashMeta"})
     config = yaml.safe_load(resp.text)
     log_print("下载配置成功")
     return config
