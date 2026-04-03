@@ -14,5 +14,5 @@ RUN echo "Types: deb" > /etc/apt/sources.list.d/debian.sources \
     && echo "Components: main contrib non-free non-free-firmware" >> /etc/apt/sources.list.d/debian.sources \
     && echo "Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg" >> /etc/apt/sources.list.d/debian.sources \
     && apt update \
-    && apt install procps -y \
+    && apt install -y procps telnet iproute2 iputils-ping dnsutils curl tcpdump wget \
     && rm -rf /var/lib/apt/lists/*
