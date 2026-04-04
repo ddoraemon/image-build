@@ -20,6 +20,7 @@ RUN apt update && apt install -y --no-install-recommends \
         libexpat1-dev \
         libdb5.3-dev \
         ca-certificates \
+        uuid-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ./configure \
@@ -27,6 +28,7 @@ RUN ./configure \
         --enable-optimizations \
         --with-lto \
         --enable-shared \
+        --with-ensurepip=install \
     && make -j$(nproc) \
     && make install
 
@@ -35,7 +37,10 @@ RUN strip /opt/python3/3.13/bin/python3.13 \
     && strip /opt/python3/3.13/lib/libpython3.13.so.* \
     && rm -rf /opt/python3/3.13/lib/python3.13/test \
     && rm -rf /opt/python3/3.13/lib/python3.13/config-3.13-*-linux-gnu \
-    && rm -rf /opt/python3/3.13/lib/python3.13/idlelib
+    && rm -rf /opt/python3/3.13/lib/python3.13/idlelib \
+    && find /opt/python3/3.13 -name "*.a" -delete \
+    && find /opt/python3/3.13 -name "*.pyc" -delete \
+    && find /opt/python3/3.13 -name "__pycache__" -type d -exec rm -rf {} +
 
 ############################
 # runtime
@@ -56,9 +61,12 @@ RUN apt update && apt install -y --no-install-recommends \
         libdb5.3 \
         liblzma5 \
         libc6 \
+        libuuid1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/python3/3.13 /opt/python3/3.13
+
+# ENV LD_LIBRARY_PATH=/opt/python3/3.13/lib
 
 # 注册共享库
 RUN echo "/opt/python3/3.13/lib" > /etc/ld.so.conf.d/python3.13.conf \
