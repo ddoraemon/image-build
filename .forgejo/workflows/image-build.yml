@@ -19,6 +19,14 @@ on:
         required: false
         type: string
         default: "untagged"
+      USE_CACHE:
+        description: "是否使用构建缓存"
+        required: false
+        type: choice
+        options:
+          - "true"
+          - "false"
+        default: "true"
       GIT_URL:
         description: "Git地址"
         required: false
@@ -70,7 +78,7 @@ jobs:
           git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
-          ./build.sh -x -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }}
+          ./build.sh -x -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
 
   sync-amd64:
     runs-on: nas
@@ -101,7 +109,7 @@ jobs:
           git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
-          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }}
+          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
 
   sync-arm64:
     runs-on: nas

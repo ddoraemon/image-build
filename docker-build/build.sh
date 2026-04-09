@@ -17,11 +17,12 @@ repo=""
 tag=""
 push=false
 latest=false
+use_cache=true
 
 # 架构开关
 declare -A arch_map=( ["arm64"]=false ["amd64"]=false )
 
-while getopts "axplr:t:f:" opt; do
+while getopts "axplr:t:c:" opt; do
   case "$opt" in
     a) arch_map["arm64"]=true ;;
     x) arch_map["amd64"]=true ;;
@@ -29,7 +30,8 @@ while getopts "axplr:t:f:" opt; do
     l) latest=true ;;
     r) repo="$OPTARG" ;;
     t) tag="$OPTARG" ;;
-    *) echo "Usage: $0 [-a] [-x] [-p] [-l] [-r repo] [-t tag]"; exit 1 ;;
+    c) use_cache="$OPTARG" ;;
+    *) echo "Usage: $0 [-a] [-x] [-p] [-l] [-r repo] [-t tag] [-c use_cache]"; exit 1 ;;
   esac
 done
 
@@ -71,7 +73,12 @@ build_and_push() {
   echo "Building $arch image..."
   pre_build "$arch"
 
-  docker buildx build --platform=linux/${arch} -f ${repo}/Dockerfile --build-arg VERSION=${tag} -t registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${image_tag} --provenance=false --sbom=false --push ./${repo}
+  local cache_flag=""
+  if [ "$use_cache" = "false" ]; then
+    cache_flag="--no-cache"
+  fi
+
+  docker buildx build --platform=linux/${arch} -f ${repo}/Dockerfile --build-arg VERSION=${tag} -t registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${image_tag} --provenance=false --sbom=false ${cache_flag} --push ./${repo}
 }
 
 # 构建选中的架构
