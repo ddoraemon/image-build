@@ -12,5 +12,6 @@ pre_build() {
     echo "下载${python}.tar.gz"
     wget "http://public:Public123@192.168.60.100:8824/python3/${python}.tar.gz"
     tar xvf "${python}.tar.gz"
+    ls -la
     cd ..
 }
