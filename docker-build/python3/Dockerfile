@@ -3,9 +3,22 @@
 ############################
 FROM registry.cn-hangzhou.aliyuncs.com/rotigue/debian13:base AS builder
 
-WORKDIR /Python-3.13
-COPY Python-3.13/ /Python-3.13/
+ARG VERSION
+SHELL ["/bin/bash", "-c"]
 
+WORKDIR /build
+
+# 拷贝源码（确保外部只有一个 Python-x.x 目录）
+COPY Python-* /build/
+
+# 进入源码目录（自动匹配版本）
+RUN PY_NUM=${VERSION#py} && \
+    PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" && \
+    mv Python-${PY_VER} Python-src
+
+WORKDIR /build/Python-src
+
+# 安装依赖
 RUN apt update && apt install -y --no-install-recommends \
         build-essential \
         zlib1g-dev \
@@ -23,8 +36,11 @@ RUN apt update && apt install -y --no-install-recommends \
         uuid-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN ./configure \
-        --prefix=/opt/python3/3.13 \
+# 编译安装
+RUN PY_NUM=${VERSION#py} && \
+    PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" && \
+    ./configure \
+        --prefix=/opt/python3/${PY_VER} \
         --enable-optimizations \
         --with-lto \
         --enable-shared \
@@ -32,21 +48,27 @@ RUN ./configure \
     && make -j$(nproc) \
     && make install
 
-# strip 二进制，减小体积
-RUN strip /opt/python3/3.13/bin/python3.13 \
-    && strip /opt/python3/3.13/lib/libpython3.13.so.* \
-    && rm -rf /opt/python3/3.13/lib/python3.13/test \
-    && rm -rf /opt/python3/3.13/lib/python3.13/config-3.13-*-linux-gnu \
-    && rm -rf /opt/python3/3.13/lib/python3.13/idlelib \
-    && find /opt/python3/3.13 -name "*.a" -delete \
-    && find /opt/python3/3.13 -name "*.pyc" -delete \
-    && find /opt/python3/3.13 -name "__pycache__" -type d -exec rm -rf {} +
+# 精简体积
+RUN PY_NUM=${VERSION#py} && \
+    PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" && \
+    strip /opt/python3/${PY_VER}/bin/python${PY_VER} && \
+    strip /opt/python3/${PY_VER}/lib/libpython${PY_VER}.so.* && \
+    rm -rf /opt/python3/${PY_VER}/lib/python${PY_VER}/test && \
+    rm -rf /opt/python3/${PY_VER}/lib/python${PY_VER}/config-* && \
+    rm -rf /opt/python3/${PY_VER}/lib/python${PY_VER}/idlelib && \
+    find /opt/python3/${PY_VER} -name "*.a" -delete && \
+    find /opt/python3/${PY_VER} -name "*.pyc" -delete && \
+    find /opt/python3/${PY_VER} -name "__pycache__" -type d -exec rm -rf {} +
 
 ############################
 # runtime
 ############################
 FROM registry.cn-hangzhou.aliyuncs.com/rotigue/debian13:base AS runtime
 
+ARG VERSION
+SHELL ["/bin/bash", "-c"]
+
+# 安装运行时依赖
 RUN apt update && apt install -y --no-install-recommends \
         ca-certificates \
         libssl3 \
@@ -64,20 +86,24 @@ RUN apt update && apt install -y --no-install-recommends \
         libuuid1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /opt/python3/3.13 /opt/python3/3.13
+# 拷贝 Python
+COPY --from=builder /opt/python3 /opt/python3
 
-# ENV LD_LIBRARY_PATH=/opt/python3/3.13/lib
+# 注册动态库
+RUN PY_NUM=${VERSION#py} && \
+    PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" && \
+    echo "/opt/python3/${PY_VER}/lib" > /etc/ld.so.conf.d/python.conf && \
+    ldconfig
 
-# 注册共享库
-RUN echo "/opt/python3/3.13/lib" > /etc/ld.so.conf.d/python3.13.conf \
-    && ldconfig
+# 创建软链接
+RUN PY_NUM=${VERSION#py} && \
+    PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" && \
+    ln -sf /opt/python3/${PY_VER}/bin/python${PY_VER} /usr/local/bin/python${PY_VER} && \
+    ln -sf python${PY_VER} /usr/local/bin/python3 && \
+    ln -sf python${PY_VER} /usr/local/bin/python && \
+    ln -sf /opt/python3/${PY_VER}/bin/pip${PY_VER} /usr/local/bin/pip${PY_VER} && \
+    ln -sf pip${PY_VER} /usr/local/bin/pip3 && \
+    ln -sf pip${PY_VER} /usr/local/bin/pip
 
-# 不改 PATH，用软链接暴露到 /usr/local/bin
-RUN ln -sf /opt/python3/3.13/bin/python3.13 /usr/local/bin/python3.13 \
-    && ln -sf python3.13 /usr/local/bin/python3 \
-    && ln -sf python3.13 /usr/local/bin/python \
-    && ln -sf /opt/python3/3.13/bin/pip3.13 /usr/local/bin/pip3.13 \
-    && ln -sf pip3.13 /usr/local/bin/pip3 \
-    && ln -sf pip3.13 /usr/local/bin/pip
-
-CMD ["python3.13"]
+# 默认启动
+CMD ["bash", "-c", "PY_NUM=${VERSION#py}; PY_VER=${PY_NUM:0:1}.${PY_NUM:1}; exec python${PY_VER}"]
