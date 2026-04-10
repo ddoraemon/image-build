@@ -35,6 +35,8 @@ RUN apt update && apt install -y --no-install-recommends \
         libdb5.3-dev \
         ca-certificates \
         uuid-dev \
+        libzstd-dev \
+        libnsl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 编译安装
@@ -85,6 +87,8 @@ RUN apt update && apt install -y --no-install-recommends \
         liblzma5 \
         libc6 \
         libuuid1 \
+        libzstd1 \
+        libnsl2 \
     && rm -rf /var/lib/apt/lists/*
 
 # 拷贝 Python
