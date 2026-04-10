@@ -14,7 +14,7 @@ COPY Python-* /build/
 # 进入源码目录（自动匹配版本）
 RUN PY_NUM=${VERSION#py} \
     && PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" \
-    && tar xvf Python-${PY_VER} \
+    && tar xvf Python-${PY_VER}.tar.gz \
     && mv Python-${PY_VER} Python-src
 
 WORKDIR /build/Python-src
