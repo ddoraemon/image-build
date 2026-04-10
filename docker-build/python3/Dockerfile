@@ -11,12 +11,11 @@ WORKDIR /build
 # 拷贝源码（确保外部只有一个 Python-x.x 目录）
 COPY Python-* /build/
 
-RUN ls -l /build
-
 # 进入源码目录（自动匹配版本）
-RUN PY_NUM=${VERSION#py} && \
-    PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" && \
-    mv Python-${PY_VER} Python-src
+RUN PY_NUM=${VERSION#py} \
+    && PY_VER="${PY_NUM:0:1}.${PY_NUM:1}" \
+    && tar xvf Python-${PY_VER} \
+    && mv Python-${PY_VER} Python-src
 
 WORKDIR /build/Python-src
 
