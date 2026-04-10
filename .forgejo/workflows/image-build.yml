@@ -97,7 +97,7 @@ jobs:
           '
 
   build-arm64:
-    runs-on: m2
+    runs-on: bypass
     container:
       image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
       volumes:
