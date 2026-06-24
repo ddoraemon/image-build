@@ -10,6 +10,6 @@ pre_build() {
     local python="Python-${num:0:1}.${num:1}"
     cd "./${repo}"
     echo "下载${python}.tar.gz"
-    wget "https://public:Public123@10.0.0.215/python3/${python}.tar.gz"
+    wget "http://public:Public123@10.0.0.215/python3/${python}.tar.gz"
     cd ..
 }
