@@ -30,7 +30,7 @@ on:
         description: "Git地址"
         required: false
         type: string
-        default: "ssh://git@gitee.com:ddoraemon/image-build.git"
+        default: "git@gitee.com:ddoraemon/image-build.git"
       ORACLE_RESOURCE_HOST:
         description: "oracle的资源机器ip"
         required: false
