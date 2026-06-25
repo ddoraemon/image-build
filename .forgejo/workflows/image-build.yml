@@ -30,7 +30,7 @@ on:
         description: "GitHub地址"
         required: false
         type: string
-        default: "git@gitee.com:ddoraemon/image-build.git"
+        default: "git@github.com:ddoraemon/image-build.git"
       FORGEJO_URL:
         description: "Forgejo地址"
         required: false
@@ -211,7 +211,39 @@ jobs:
 #              https://hub.docker.com/v2/repositories/rotigue/${{ inputs.REPO_NAME }}/tags/${{ inputs.TAG }}-amd64/
 #          '
 
-  manifest:
+  manifest-aliyun:
+    needs:
+      - sync-amd64
+      - sync-arm64
+    runs-on: nas
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Docker login
+        run: |
+          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
+
+      - name: Docker manifest
+        run: |
+          set -x
+          rm -rf ~/.docker/manifests
+          mkdir -p ~/.docker/manifests
+          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
+
+      - name: Push Latest
+        if: ${{ inputs.PUSH_LATEST == 'true' }}
+        run: |
+          set -x
+          rm -rf ~/.docker/manifests
+          mkdir -p ~/.docker/manifests
+          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
+        
+
+  manifest-docker:
     needs:
       - sync-amd64
       - sync-arm64
@@ -224,15 +256,12 @@ jobs:
       - name: Docker login
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin
-          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
 
       - name: Docker manifest
         run: |
           set -x
           rm -rf ~/.docker/manifests
           mkdir -p ~/.docker/manifests
-          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
           docker manifest create rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           docker manifest push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
 
@@ -242,11 +271,8 @@ jobs:
           set -x
           rm -rf ~/.docker/manifests
           mkdir -p ~/.docker/manifests
-          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
           docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
-
 
       - name: Delete Tags
         run: |
@@ -261,20 +287,3 @@ jobs:
           curl -X DELETE \
               -H "Authorization: JWT $TOKEN" \
               https://hub.docker.com/v2/repositories/rotigue/${{ inputs.REPO_NAME }}/tags/${{ inputs.TAG }}-amd64/
-#
-#  deploy:
-#    needs:
-#      - manifest
-#    runs-on: nas
-#    container:
-#      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
-#    steps:
-#      - name: Docker deploy
-#        if: ${{ inputs.NEED_DEPLOY == 'true' }}
-#        run: |
-#          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.DEPLOY_HOST }} \
-#          '
-#          cd ${{ inputs.DEPLOY_COMPOSE_PATH }}
-#          docker compose pull ${{ inputs.REPO_NAME }}
-#          docker compose up -d ${{ inputs.REPO_NAME }}
-#          '
