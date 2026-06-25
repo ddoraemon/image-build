@@ -78,7 +78,11 @@ build_and_push() {
     cache_flag="--no-cache"
   fi
 
-  docker buildx build --platform=linux/${arch} -f ${repo}/Dockerfile --build-arg VERSION=${tag} -t registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${image_tag} --provenance=false --sbom=false ${cache_flag} --push ./${repo}
+  if [ "$push" != true ]; then
+    docker buildx build --platform=linux/${arch} -f ${repo}/Dockerfile --build-arg VERSION=${tag} -t registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${image_tag} --provenance=false --sbom=false ${cache_flag} ./${repo}
+  else
+    docker buildx build --platform=linux/${arch} -f ${repo}/Dockerfile --build-arg VERSION=${tag} -t registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${image_tag} --provenance=false --sbom=false ${cache_flag} --push ./${repo}
+  fi
 }
 
 # 构建选中的架构
@@ -87,34 +91,3 @@ for arch in "${!arch_map[@]}"; do
     build_and_push "$arch"
   fi
 done
-
-# 创建 manifest
-if [ "$push" = true ]; then
-  rm -rf ~/.docker/manifests
-  mkdir -p ~/.docker/manifests
-
-  manifest_arches=()
-  registry_manifest_arches=()
-  for arch in "${!arch_map[@]}"; do
-    if ${arch_map[$arch]}; then
-      manifest_arches+=( "rotigue/${repo}:${tag}-${arch}" )
-      registry_manifest_arches+=( "registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${tag}-${arch}" )
-    fi
-  done
-
-  echo "Creating and pushing manifest for tag $tag..."
-  docker manifest create rotigue/${repo}:${tag} "${manifest_arches[@]}"
-  docker manifest push rotigue/${repo}:${tag}
-
-  docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${tag} "${registry_manifest_arches[@]}"
-  docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:${tag}
-
-  if [ "$latest" = true ]; then
-    echo "Creating and pushing manifest for latest..."
-    docker manifest create rotigue/${repo}:latest "${manifest_arches[@]}"
-    docker manifest push rotigue/${repo}:latest
-
-    docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:latest "${registry_manifest_arches[@]}"
-    docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${repo}:latest
-  fi
-fi

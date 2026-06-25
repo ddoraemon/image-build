@@ -72,7 +72,7 @@ jobs:
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
-          ./build.sh -x -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
+          ./build.sh -x -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
           
 
 #  sync-amd64:
@@ -125,7 +125,7 @@ jobs:
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
-          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
+          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
 
   build-arm641:
     runs-on: bypass
@@ -142,7 +142,7 @@ jobs:
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
-          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }}-b -c ${{ inputs.USE_CACHE }}
+          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
 
 #  sync-arm64:
 #    runs-on: nas
