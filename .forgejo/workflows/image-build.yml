@@ -127,6 +127,23 @@ jobs:
           export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
           ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
 
+  build-arm641:
+    runs-on: bypass
+    container:
+      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Docker Build
+        run: |
+          set -x
+          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
+          git clone ${{ inputs.FORGEJO_URL }} ${{ inputs.REPO_NAME }}
+          cd ${{ inputs.REPO_NAME }}/docker-build
+          chmod +x ./build.sh
+          export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
+          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }}-b -c ${{ inputs.USE_CACHE }}
+
 #  sync-arm64:
 #    runs-on: nas
 #    needs:
