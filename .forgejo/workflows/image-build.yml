@@ -93,8 +93,10 @@ jobs:
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
-      - name: Docker pull and pull
+      - name: Docker pull and push
         run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin
+          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
           docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
@@ -141,8 +143,10 @@ jobs:
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
-      - name: Docker push
+      - name: Docker pull and push
         run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin
+          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
           docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
           docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
           docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
@@ -207,7 +211,12 @@ jobs:
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
-      - name: Docker push
+      - name: Docker login
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin
+          echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
+
+      - name: Docker manifest
         run: |
           rm -rf ~/.docker/manifests
           mkdir -p ~/.docker/manifests
