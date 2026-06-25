@@ -105,7 +105,7 @@ jobs:
 
 
   build-arm64:
-    runs-on: bypass
+    runs-on: oracle
     container:
       image: rotigue/img-builder:latest
       volumes:
@@ -118,7 +118,7 @@ jobs:
           git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
-          export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
+          export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
           ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
 
 #  sync-arm64:
