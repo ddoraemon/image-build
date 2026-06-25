@@ -26,11 +26,16 @@ on:
           - "true"
           - "false"
         default: "true"
-      GIT_URL:
-        description: "Git地址"
+      GITHUB_URL:
+        description: "GitHub地址"
         required: false
         type: string
-        default: "git@gitee.com:ddoraemon/image-build.git"
+        default: "git@github.com:ddoraemon/image-build.git"
+      FORGEJO_URL:
+        description: "Forgejo地址"
+        required: false
+        type: string
+        default: "ssh://git@gitea.rotigue.cn:50832/cloud/image-build.git"
       ORACLE_RESOURCE_HOST:
         description: "oracle的资源机器ip"
         required: false
@@ -63,7 +68,7 @@ jobs:
         run: |
           set -x
           echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
-          git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
+          git clone ${{ inputs.FORGEJO_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
@@ -116,7 +121,7 @@ jobs:
         run: |
           set -x
           echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin
-          git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
+          git clone ${{ inputs.GITHUB_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
