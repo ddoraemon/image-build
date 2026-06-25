@@ -4,7 +4,7 @@ ARG VERSION
 ENV VERSION=${VERSION}
 
 RUN apt update \
-  && apt install -y supervisor openssh-server iputils-ping dnsutils telnet wget \
+  && apt install -y supervisor openssh-server iputils-ping dnsutils telnet wget jq \
   && apt install -y ca-certificates curl \
   && install -m 0755 -d /etc/apt/keyrings \
   && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
