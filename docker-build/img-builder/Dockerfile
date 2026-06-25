@@ -19,6 +19,7 @@ RUN apt update \
   && mkdir -p /root/.ssh \
   && chmod 700 /root/.ssh \
   && ssh-keyscan -p 50832 gitea.rotigue.cn >> /root/.ssh/known_hosts \
+  && ssh-keyscan gitee.com >> /root/.ssh/known_hosts \
   && mkdir -p /logs \
   && mkdir -p /root/.m2/repository \
   && mkdir -p /opt/java/jdk1.8 \
