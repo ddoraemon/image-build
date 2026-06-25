@@ -31,11 +31,11 @@ on:
         required: false
         type: string
         default: "https://gitea.rotigue.cn:9443/cloud/image-build.git"
-      PUSH_BUILDER_HOST:
-        description: "推送manifest机器"
+      ORACLE_RESOURCE_HOST:
+        description: "oracle的资源机器ip"
         required: false
         type: string
-        default: "43.163.232.184"
+        default: "10.0.0.215"
       PUSH_LATEST:
         description: "是否推送latest"
         required: false
@@ -44,24 +44,12 @@ on:
           - "true"
           - "false"
         default: "false"
-      NEED_DEPLOY:
-        description: "是否部署"
-        required: false
-        type: choice
-        options:
-          - "true"
-          - "false"
-        default: "false"
-      DEPLOY_HOST:
-        description: "部署机器"
+      NAS_RESOURCE_HOST:
+        description: "nas的资源机器ip"
         required: false
         type: string
         default: "192.168.60.100"
-      DEPLOY_COMPOSE_PATH:
-        description: "部署compose路径"
-        required: false
-        type: string
-        default: "/srv/dev-disk-by-uuid-870696b0-795d-459f-a3ae-c013e425e9a0/nas/app/compose/home"
+
 
 jobs:
 #  build-amd64:
@@ -108,6 +96,7 @@ jobs:
           git clone ${{ inputs.GIT_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
+          export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
           ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
 
 #  sync-arm64:
