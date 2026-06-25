@@ -68,6 +68,7 @@ jobs:
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
           ./build.sh -x -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }}
+          
 
 #  sync-amd64:
 #    runs-on: nas
