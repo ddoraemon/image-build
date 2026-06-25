@@ -8,7 +8,8 @@ RUN apt update \
   && apt install -y ca-certificates curl
 
 RUN ssh-keyscan -p 50832 gitea.rotigue.cn > /root/.ssh/known_hosts \
-    && ssh-keyscan gitee.com >> /root/.ssh/known_hosts
+    && ssh-keyscan gitee.com >> /root/.ssh/known_hosts \
+    && ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 RUN install -m 0755 -d /etc/apt/keyrings \
   && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \

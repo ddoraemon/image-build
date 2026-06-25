@@ -30,7 +30,7 @@ on:
         description: "GitHub地址"
         required: false
         type: string
-        default: "git@github.com:ddoraemon/image-build.git"
+        default: "git@gitee.com:ddoraemon/image-build.git"
       FORGEJO_URL:
         description: "Forgejo地址"
         required: false
