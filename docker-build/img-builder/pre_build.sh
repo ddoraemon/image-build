@@ -9,12 +9,12 @@ pre_build() {
     cd ./${repo}
     echo "当前要执行${arch}的构建前操作"
     echo "下载jdk1.8-${arch}.tar.gz"
-    wget "http://public:Public123@192.168.60.100:8824/jdk/jdk1.8-${arch}.tar.gz"
+    wget "http://public:Public123@${RESOURCE_IP}:8824/jdk/jdk1.8-${arch}.tar.gz"
     tar xvf jdk1.8-${arch}.tar.gz
     echo "下载jdk21-${arch}.tar.gz"
-    wget "http://public:Public123@192.168.60.100:8824/jdk/jdk21-${arch}.tar.gz"
+    wget "http://public:Public123@${RESOURCE_IP}:8824/jdk/jdk21-${arch}.tar.gz"
     tar xvf jdk21-${arch}.tar.gz
-    wget "http://public:Public123@192.168.60.100:8824/jdk/maven-3.19.2.tar.gz"
+    wget "http://public:Public123@${RESOURCE_IP}:8824/jdk/maven-3.19.2.tar.gz"
     tar xvf maven-3.19.2.tar.gz
     cd ..
 
