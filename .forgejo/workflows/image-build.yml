@@ -225,10 +225,10 @@ jobs:
           set -x
           rm -rf ~/.docker/manifests
           mkdir -p ~/.docker/manifests
-          docker manifest create rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          docker manifest push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
           docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
+          docker manifest create rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
 
       - name: Push Latest
         if: ${{ inputs.PUSH_LATEST == 'true' }}
@@ -236,10 +236,11 @@ jobs:
           set -x
           rm -rf ~/.docker/manifests
           mkdir -p ~/.docker/manifests
-          docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
           docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
+          docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
+
 
       - name: Delete Tags
         run: |
