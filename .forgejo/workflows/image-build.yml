@@ -209,7 +209,7 @@ jobs:
     needs:
       - sync-amd64
       - sync-arm64
-    runs-on: nas
+    runs-on: oracle
     container:
       image: rotigue/img-builder:latest
       volumes:
