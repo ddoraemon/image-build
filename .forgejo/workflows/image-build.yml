@@ -90,6 +90,8 @@ jobs:
       - build-amd64
     container:
       image: rotigue/img-builder:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
     steps:
       - name: Docker pull and pull
         run: |
@@ -136,6 +138,8 @@ jobs:
       - build-arm64
     container:
       image: rotigue/img-builder:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
     steps:
       - name: Docker push
         run: |
@@ -200,6 +204,8 @@ jobs:
     runs-on: nas
     container:
       image: rotigue/img-builder:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
     steps:
       - name: Docker push
         run: |
