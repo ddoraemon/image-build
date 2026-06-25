@@ -3,7 +3,7 @@ FROM registry.cn-hangzhou.aliyuncs.com/rotigue/python3:py313
 ARG VERSION
 ENV VERSION=${VERSION}
 
-RUN ssh-keyscan -p 50832 gitea.rotigue.cn >> /root/.ssh/known_hosts \
+RUN ssh-keyscan -p 50832 gitea.rotigue.cn > /root/.ssh/known_hosts \
     && ssh-keyscan gitee.com >> /root/.ssh/known_hosts
 
 RUN apt update \
