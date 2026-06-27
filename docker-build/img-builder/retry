@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # 默认配置
-MAX_ATTEMPTS=3
-DELAY=5
+MAX_ATTEMPTS=10
+DELAY=2
 
 # 检查第一个参数是否是纯数字，如果是，则将其作为自定义重试次数
 if [[ "$1" =~ ^[0-9]+$ ]]; then
