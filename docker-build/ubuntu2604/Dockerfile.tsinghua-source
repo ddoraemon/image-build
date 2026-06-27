@@ -1,0 +1,12 @@
+FROM ubuntu2604
+
+ENV TZ=Asia/Shanghai
+
+COPY install.sh /
+
+RUN rm -rf /bin/sh \
+    && ln -s /bin/bash /bin/sh \
+    && chmod +x /install.sh \
+    && apt update \
+    && rm -rf /install.sh \
+    && rm -rf /var/lib/apt/lists/*

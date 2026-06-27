@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# 默认配置
+MAX_ATTEMPTS=10
+DELAY=2
+
+# 检查第一个参数是否是纯数字，如果是，则将其作为自定义重试次数
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+    MAX_ATTEMPTS=$1
+    shift # 弹出次数参数，把后面的真正命令留给 "$@"
+fi
+
+# 确保后面还有要执行的命令
+if [ -z "$1" ]; then
+    echo "❌ 错误: 未指定要执行的命令。"
+    echo "用法: retry [重试次数] <具体命令>"
+    exit 1
+fi
+
+ATTEMPT=1
+until "$@"; do
+  if (( ATTEMPT >= MAX_ATTEMPTS )); then
+    echo "❌ 命令在 $MAX_ATTEMPTS 次尝试后仍然失败。"
+    exit 1
+  fi
+  echo "⚠️ 命令执行失败，${DELAY}秒后进行第 $((ATTEMPT+1))/$MAX_ATTEMPTS 次尝试..."
+  sleep $DELAY
+  ((ATTEMPT++))
+done
