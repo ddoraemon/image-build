@@ -247,6 +247,12 @@ jobs:
           mkdir -p ~/.docker/manifests
           retry docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           retry docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
+
+#      - name: Clear Docker Cache
+#        run: |
+#          set -x
+#          docker system prune -af
+#          docker builder prune -af
         
 
   manifest-docker:
@@ -279,6 +285,12 @@ jobs:
           mkdir -p ~/.docker/manifests
           retry docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           retry docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
+
+#      - name: Clear Docker Cache
+#        run: |
+#          set -x
+#          docker system prune -af
+#          docker builder prune -af
 
       - name: Delete Tags
         run: |
