@@ -31,6 +31,8 @@ RUN mkdir -p /root/.ssh \
   && mkdir -p /opt/java/jdk21\
   && mkdir -p /opt/maven
 
+COPY retry /usr/bin/
+RUN chmod +x /usr/bin/retry
 COPY runner.pub /root/.ssh/authorized_keys
 RUN chmod 600 /root/.ssh/authorized_keys
 COPY runner.pub /root/.ssh/id_rsa.pub
