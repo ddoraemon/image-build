@@ -1,6 +1,6 @@
 FROM ubuntu:26.04
 
-ENV TZ=Asia/Shanghai
+ENV TZ=CST-8
 
 COPY install.sh /
 
