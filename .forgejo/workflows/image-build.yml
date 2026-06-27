@@ -18,7 +18,7 @@ on:
         description: "Dockerfile文件"
         required: false
         type: string
-        default: "Dockerfile.tsinghua-source"
+        default: "Dockerfile"
       TAG:
         description: "Tag名"
         required: false
