@@ -23,7 +23,7 @@ dockerfile="Dockerfile"
 # 架构开关
 declare -A arch_map=( ["arm64"]=false ["amd64"]=false )
 
-while getopts "axplr:t:c:" opt; do
+while getopts "axplf:r:t:c:" opt; do
   case "$opt" in
     a) arch_map["arm64"]=true ;;
     x) arch_map["amd64"]=true ;;
