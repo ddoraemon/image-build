@@ -12,8 +12,13 @@ on:
           - "python3"
           - "img-builder"
           - "freestyle"
-          - "ubuntu"
+          - "ubuntu2604"
         default: "debian13"
+      DOCKER_FILE:
+        description: "Dockerfile文件"
+        required: false
+        type: string
+        default: "Dockerfile.tsinghua-source"
       TAG:
         description: "Tag名"
         required: false
@@ -73,7 +78,7 @@ jobs:
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
-          ./build.sh -x -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
+          ./build.sh -x -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
           
 
 #  sync-amd64:
@@ -126,7 +131,7 @@ jobs:
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
-          ./build.sh -a -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
+          ./build.sh -a -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
 
 #  sync-arm64:
 #    runs-on: nas
