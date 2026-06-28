@@ -22,7 +22,7 @@ RUN install -m 0755 -d /etc/apt/keyrings \
   && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
   && chmod a+r /etc/apt/keyrings/docker.asc \
   && echo "Types: deb" > /etc/apt/sources.list.d/docker.sources \
-  && echo "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/debian" >> /etc/apt/sources.list.d/docker.sources \
+  && echo "URIs: http://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/debian" >> /etc/apt/sources.list.d/docker.sources \
   && echo 'Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")' >> /etc/apt/sources.list.d/docker.sources \
   && echo "Components: stable" >> /etc/apt/sources.list.d/docker.sources \
   && echo "Architectures: $(dpkg --print-architecture)" >> /etc/apt/sources.list.d/docker.sources \
