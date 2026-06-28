@@ -13,6 +13,7 @@ RUN apt update \
      g++-12 \
      gcc \
      g++ \
+     libssl-dev \
   && apt install -y ca-certificates curl
 
 # ubuntu手动构建cmake 3.31.12
