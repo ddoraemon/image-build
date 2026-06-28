@@ -16,5 +16,7 @@ pre_build() {
     tar xvf jdk21-${arch}.tar.gz
     wget "http://public:Public123@${RESOURCE_IP}:8824/jdk/maven-3.19.2.tar.gz"
     tar xvf maven-3.19.2.tar.gz
+    echo "下载cmake源码"
+    wget "http://public:Public123@${RESOURCE_IP}:8824/toolchain/cmake-3.31.12.tar.gz"
     cd ..
 }

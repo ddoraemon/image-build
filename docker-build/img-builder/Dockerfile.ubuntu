@@ -1,31 +1,43 @@
-FROM registry.cn-hangzhou.aliyuncs.com/rotigue/python3:py313
+FROM registry.cn-hangzhou.aliyuncs.com/rotigue/python3:py313-ubuntu
 
 ARG VERSION
 ENV VERSION=${VERSION}
+
+COPY cmake-3.31.12.tar.gz /
 
 RUN apt update \
   && apt install -y supervisor openssh-server iputils-ping dnsutils telnet wget jq \
      build-essential \
      make \
-     cmake \
      gcc-12 \
      g++-12 \
      gcc \
      g++ \
   && apt install -y ca-certificates curl
 
+# ubuntu手动构建cmake 3.31.12
+RUN cd / \
+    && tar xvf cmake-3.31.12.tar.gz \
+    && cd cmake-3.31.12 \
+    && ./bootstrap \
+    && make -j$(nproc) \
+    && make install \
+    && cmake --version \
+    && cd / \
+    && rm -rf cmake-3.31.12.tar.gz cmake-3.31.12
+
 RUN ssh-keyscan -p 50832 gitea.rotigue.cn > /root/.ssh/known_hosts \
     && ssh-keyscan gitee.com >> /root/.ssh/known_hosts \
     && ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 RUN install -m 0755 -d /etc/apt/keyrings \
-  && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
+  && curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc \
   && chmod a+r /etc/apt/keyrings/docker.asc \
   && echo "Types: deb" > /etc/apt/sources.list.d/docker.sources \
-  && echo "URIs: https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/debian" >> /etc/apt/sources.list.d/docker.sources \
+  && echo "URIs: https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/ubuntu" >> /etc/apt/sources.list.d/docker.sources \
   && echo "Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")" >> /etc/apt/sources.list.d/docker.sources \
   && echo "Components: stable" >> /etc/apt/sources.list.d/docker.sources \
-  && echo "Signed-By: /etc/apt/keyrings/docker.asc" >> /etc/apt/sources.list.d/docker.sources
+  && echo "Signed-By: /etc/apt/keyrings/docker.gpg" >> /etc/apt/sources.list.d/docker.sources
 
 RUN apt update \
   && apt install -y docker-ce-cli \
