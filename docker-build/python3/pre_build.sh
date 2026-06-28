@@ -7,6 +7,7 @@ before_build() {
 pre_build() {
     local arch="$1"
     local num="${tag#py}"
+    num="${num%%-*}"
     local python="Python-${num:0:1}.${num:1}"
     cd "./${repo}"
     echo "下载${python}.tar.gz"
