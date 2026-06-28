@@ -9,12 +9,5 @@ RUN rm -rf /bin/sh \
     && chmod +x /install.sh \
     && /install.sh \
     && apt update \
-    && apt install -y locales language-pack-zh-hans \
-    && locale-gen zh_CN.UTF-8 \
-    && update-locale LANG=zh_CN.UTF-8 \
     && rm -rf /install.sh \
-    && rm -rf /var/lib/apt/lists/* \
-    && echo "export LANG=zh_CN.UTF-8" >> /etc/bash.bashrc \
-    && echo "export LC_ALL=zh_CN.UTF-8" >> /etc/bash.bashrc \
-    && echo "LANG=zh_CN.UTF-8" >> /etc/environment \
-    && echo "LC_ALL=zh_CN.UTF-8" >> /etc/environment
+    && rm -rf /var/lib/apt/lists/*
