@@ -10,7 +10,7 @@ RUN apt update && apt install -y supervisor \
     && mkdir -p /app/freestyle/ui \
     && mkdir -p /app/freestyle/ui/default \
     && mkdir -p /app/freestyle/ui/zashboard \
-    && pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple requests pyyaml \
+    && pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple requests==2.34.2 pyyaml==6.0.3 \
     && rm -rf /var/lib/apt/lists/* \
     && pip3 cache purge \
     && rm -rf /tmp/pip-*
