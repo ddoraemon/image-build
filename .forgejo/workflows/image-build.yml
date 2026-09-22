@@ -3,6 +3,14 @@ name: docker-build
 on:
   workflow_dispatch:
     inputs:
+      CLOUD_PROVIDER:
+        description: "云服务"
+        required: false
+        type: choice
+        options:
+          - "ALIYUN"
+          - "TXYUN"
+        default: "ALIYUN"
       REPO_NAME:
         description: "仓库名"
         required: false
@@ -61,6 +69,10 @@ on:
         type: string
         default: "192.168.60.100"
 
+env:
+  DOCKER_REGISTRY: ${{ vars[format('{0}_DOCKER_REGISTRY', inputs.CLOUD_PROVIDER)] }}
+  DOCKER_USERNAME: ${{ secrets[format('{0}_DOCKER_USERNAME', inputs.CLOUD_PROVIDER)] }}
+  DOCKER_PASSWORD: ${{ secrets[format('{0}_DOCKER_PASSWORD', inputs.CLOUD_PROVIDER)] }}
 
 jobs:
   build-amd64:
@@ -73,138 +85,148 @@ jobs:
       - name: Docker Build
         run: |
           set -x
-          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
+          retry bash -c 'echo "$DOCKER_PASSWORD" | docker login --username=$DOCKER_USERNAME $DOCKER_REGISTRY --password-stdin'
           retry git clone ${{ inputs.FORGEJO_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
-          ./build.sh -x -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
-          
+          ./build.sh -x -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p -d $DOCKER_REGISTRY/rotigue
+
 
 #  sync-amd64:
-#    runs-on: nas
+#    runs-on: oracle
 #    needs:
 #      - build-amd64
 #    container:
-#      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
+#      image: rotigue/img-builder:latest
+#      volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock
 #    steps:
-#      - name: Docker push
+#      - name: Docker pull and push
 #        run: |
-#          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
-#          '
-#          docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+#          set -x
+#          retry bash -c 'echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin'
+#          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
+#          retry docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
 #          docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-#          docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-#          '
-
-  sync-amd64:
-    runs-on: oracle
-    needs:
-      - build-amd64
-    container:
-      image: rotigue/img-builder:latest
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-    steps:
-      - name: Docker pull and push
-        run: |
-          set -x
-          retry bash -c 'echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin'
-          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
-          retry docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          retry docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+#          retry docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
 
 
-  build-arm64:
-    runs-on: oracle
-    container:
-      image: rotigue/img-builder:latest
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-    steps:
-      - name: Docker Build
-        run: |
-          set -x
-          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
-          retry git clone ${{ inputs.GITHUB_URL }} ${{ inputs.REPO_NAME }}
-          cd ${{ inputs.REPO_NAME }}/docker-build
-          chmod +x ./build.sh
-          export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
-          ./build.sh -a -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
+#  build-arm64:
+#    runs-on: oracle
+#    container:
+#      image: rotigue/img-builder:latest
+#      volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock
+#    steps:
+#      - name: Docker Build
+#        run: |
+#          set -x
+#          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
+#          retry git clone ${{ inputs.GITHUB_URL }} ${{ inputs.REPO_NAME }}
+#          cd ${{ inputs.REPO_NAME }}/docker-build
+#          chmod +x ./build.sh
+#          export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
+#          ./build.sh -a -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p
+
 
 #  sync-arm64:
-#    runs-on: nas
+#    runs-on: oracle
 #    needs:
 #      - build-arm64
 #    container:
-#      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
+#      image: rotigue/img-builder:latest
+#      volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock
 #    steps:
-#      - name: Docker push
+#      - name: Docker pull and push
 #        run: |
-#          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
-#          '
-#          docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
+#          set -x
+#          retry bash -c 'echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin'
+#          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
+#          retry docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
 #          docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
-#          docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
-#          '
-
-  sync-arm64:
-    runs-on: oracle
-    needs:
-      - build-arm64
-    container:
-      image: rotigue/img-builder:latest
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-    steps:
-      - name: Docker pull and push
-        run: |
-          set -x
-          retry bash -c 'echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin'
-          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
-          retry docker pull registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
-          docker tag registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
-          retry docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
+#          retry docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
 
 
-#  manifest:
+#  manifest-aliyun:
 #    needs:
 #      - sync-amd64
 #      - sync-arm64
 #    runs-on: nas
 #    container:
-#      image: registry.cn-hangzhou.aliyuncs.com/rotigue/forgejo-runner:12-ssh
+#      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
+#      volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock
 #    steps:
-#      - name: Docker push
+#      - name: Docker login
 #        run: |
-#          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
-#          '
+#          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
+#
+#      - name: Docker manifest
+#        run: |
+#          set -x
 #          rm -rf ~/.docker/manifests
 #          mkdir -p ~/.docker/manifests
-#          docker manifest create rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-#          docker manifest push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
-#          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-#          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
-#          '
+#          retry docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+#          retry docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
 #
 #      - name: Push Latest
 #        if: ${{ inputs.PUSH_LATEST == 'true' }}
 #        run: |
-#          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
-#          '
+#          set -x
 #          rm -rf ~/.docker/manifests
 #          mkdir -p ~/.docker/manifests
-#          docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-#          docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
-#          docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-#          docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
-#          '
+#          retry docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+#          retry docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
+
+#      - name: Clear Docker Cache
+#        run: |
+#          set -x
+#          docker system prune -af
+#          docker builder prune -af
+        
+
+#  manifest-docker:
+#    needs:
+#      - sync-amd64
+#      - sync-arm64
+#    runs-on: oracle
+#    container:
+#      image: rotigue/img-builder:latest
+#      volumes:
+#        - /var/run/docker.sock:/var/run/docker.sock
+#    steps:
+#      - name: Docker login
+#        run: |
+#          retry bash -c 'echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin'
 #
+#      - name: Docker manifest
+#        run: |
+#          set -x
+#          rm -rf ~/.docker/manifests
+#          mkdir -p ~/.docker/manifests
+#          retry docker manifest create rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+#          retry docker manifest push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
+#
+#      - name: Push Latest
+#        if: ${{ inputs.PUSH_LATEST == 'true' }}
+#        run: |
+#          set -x
+#          rm -rf ~/.docker/manifests
+#          mkdir -p ~/.docker/manifests
+#          retry docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+#          retry docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
+
+#      - name: Clear Docker Cache
+#        run: |
+#          set -x
+#          docker system prune -af
+#          docker builder prune -af
+
 #      - name: Delete Tags
 #        run: |
-#          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${{ inputs.PUSH_BUILDER_HOST }} \
-#          '
+#          set -x
 #          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
 #              -H "Content-Type: application/json" \
 #              -d "{\"username\":\"${{ secrets.DOCKER_USERNAME }}\",\"password\":\"${{ secrets.DOCKER_PASSWORD }}\"}" \
@@ -215,93 +237,3 @@ jobs:
 #          curl -X DELETE \
 #              -H "Authorization: JWT $TOKEN" \
 #              https://hub.docker.com/v2/repositories/rotigue/${{ inputs.REPO_NAME }}/tags/${{ inputs.TAG }}-amd64/
-#          '
-
-  manifest-aliyun:
-    needs:
-      - sync-amd64
-      - sync-arm64
-    runs-on: nas
-    container:
-      image: registry.cn-hangzhou.aliyuncs.com/rotigue/img-builder:latest
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-    steps:
-      - name: Docker login
-        run: |
-          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} registry.cn-hangzhou.aliyuncs.com --password-stdin'
-
-      - name: Docker manifest
-        run: |
-          set -x
-          rm -rf ~/.docker/manifests
-          mkdir -p ~/.docker/manifests
-          retry docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          retry docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
-
-      - name: Push Latest
-        if: ${{ inputs.PUSH_LATEST == 'true' }}
-        run: |
-          set -x
-          rm -rf ~/.docker/manifests
-          mkdir -p ~/.docker/manifests
-          retry docker manifest create registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          retry docker manifest push registry.cn-hangzhou.aliyuncs.com/rotigue/${{ inputs.REPO_NAME }}:latest
-
-#      - name: Clear Docker Cache
-#        run: |
-#          set -x
-#          docker system prune -af
-#          docker builder prune -af
-        
-
-  manifest-docker:
-    needs:
-      - sync-amd64
-      - sync-arm64
-    runs-on: oracle
-    container:
-      image: rotigue/img-builder:latest
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-    steps:
-      - name: Docker login
-        run: |
-          retry bash -c 'echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin'
-
-      - name: Docker manifest
-        run: |
-          set -x
-          rm -rf ~/.docker/manifests
-          mkdir -p ~/.docker/manifests
-          retry docker manifest create rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }} rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          retry docker manifest push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}
-
-      - name: Push Latest
-        if: ${{ inputs.PUSH_LATEST == 'true' }}
-        run: |
-          set -x
-          rm -rf ~/.docker/manifests
-          mkdir -p ~/.docker/manifests
-          retry docker manifest create rotigue/${{ inputs.REPO_NAME }}:latest rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          retry docker manifest push rotigue/${{ inputs.REPO_NAME }}:latest
-
-#      - name: Clear Docker Cache
-#        run: |
-#          set -x
-#          docker system prune -af
-#          docker builder prune -af
-
-      - name: Delete Tags
-        run: |
-          set -x
-          TOKEN=$(curl -s -X POST https://hub.docker.com/v2/users/login/ \
-              -H "Content-Type: application/json" \
-              -d "{\"username\":\"${{ secrets.DOCKER_USERNAME }}\",\"password\":\"${{ secrets.DOCKER_PASSWORD }}\"}" \
-              | jq -r .token)
-          curl -X DELETE \
-              -H "Authorization: JWT $TOKEN" \
-              https://hub.docker.com/v2/repositories/rotigue/${{ inputs.REPO_NAME }}/tags/${{ inputs.TAG }}-arm64/
-          curl -X DELETE \
-              -H "Authorization: JWT $TOKEN" \
-              https://hub.docker.com/v2/repositories/rotigue/${{ inputs.REPO_NAME }}/tags/${{ inputs.TAG }}-amd64/
