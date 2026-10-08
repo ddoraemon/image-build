@@ -125,7 +125,7 @@ jobs:
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.ORACLE_RESOURCE_HOST }}
           ./build.sh -a -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p -d rotigue
-          docker tag rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
+          docker tag rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
           retry docker push ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
 
 
