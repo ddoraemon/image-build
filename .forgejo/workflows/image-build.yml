@@ -73,6 +73,7 @@ jobs:
         run: |
           set -x
           retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} ${{ vars.ALIYUN_DOCKER_REGISTRY }} --password-stdin'
+          retry bash -c 'echo "${{ secrets.TXYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.TXYUN_DOCKER_USERNAME }} ${{ vars.TXYUN_DOCKER_REGISTRY }} --password-stdin'
           retry git clone ${{ inputs.FORGEJO_URL }} ${{ inputs.REPO_NAME }}
           cd ${{ inputs.REPO_NAME }}/docker-build
           chmod +x ./build.sh
