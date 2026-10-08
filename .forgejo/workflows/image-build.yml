@@ -78,6 +78,9 @@ jobs:
           chmod +x ./build.sh
           export RESOURCE_IP=${{ inputs.NAS_RESOURCE_HOST }}
           ./build.sh -x -f ${{ inputs.DOCKER_FILE }} -r ${{ inputs.REPO_NAME }} -t ${{ inputs.TAG }} -c ${{ inputs.USE_CACHE }} -p -d ${{ vars.ALIYUN_DOCKER_REGISTRY }}/rotigue
+          docker tag ${{ vars.ALIYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          retry docker push ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          
 
   sync-amd64:
     runs-on: oracle
@@ -93,10 +96,7 @@ jobs:
           set -x
           retry bash -c 'echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username=${{ secrets.DOCKER_USERNAME }} --password-stdin'
           retry bash -c 'echo "${{ secrets.TXYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.TXYUN_DOCKER_USERNAME }} ${{ vars.TXYUN_DOCKER_REGISTRY }} --password-stdin'
-          retry bash -c 'echo "${{ secrets.ALIYUN_DOCKER_PASSWORD }}" | docker login --username=${{ secrets.ALIYUN_DOCKER_USERNAME }} ${{ vars.ALIYUN_DOCKER_REGISTRY }} --password-stdin'
-          retry docker pull ${{ vars.ALIYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          docker tag ${{ vars.ALIYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
-          retry docker push ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
+          retry docker pull ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           docker tag ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64 rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
           retry docker push rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-amd64
 
