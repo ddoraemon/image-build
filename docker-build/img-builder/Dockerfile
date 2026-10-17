@@ -38,7 +38,8 @@ RUN mkdir -p /root/.ssh \
   && mkdir -p /root/.m2/repository \
   && mkdir -p /opt/java/jdk1.8 \
   && mkdir -p /opt/java/jdk21\
-  && mkdir -p /opt/maven
+  && mkdir -p /opt/maven \
+  && mkdir -p /opt/nodejs/node24
 
 COPY retry /usr/bin/
 RUN chmod +x /usr/bin/retry
@@ -54,6 +55,21 @@ COPY ./jdk1.8/ /opt/java/jdk1.8/
 COPY ./jdk21/ /opt/java/jdk21/
 COPY ./maven/ /opt/maven/
 COPY ./settings.xml /root/.m2/
+COPY ./node24/ /opt/nodejs/node24/
+
+RUN ln -s /opt/java/jdk21/bin/java /usr/local/bin/java \
+    && ln -s /opt/java/jdk21/bin/java /usr/local/bin/java21 \
+    && ln -s /opt/java/jdk1.8/bin/java /usr/local/bin/java8 \
+    && ln -s /opt/maven/bin/mvn /usr/local/bin/mvn \
+    && ln -s /opt/python3/3.13/bin/python3.13 /usr/local/bin/python3.13 \
+    && ln -s /opt/python3/3.13/bin/pip3.13 /usr/local/bin/pip3.13 \
+    && ln -s /opt/nodejs/node24/bin/node /usr/local/bin/node \
+    && chmod +x /opt/java/jdk21/bin/java \
+    && chmod +x /opt/java/jdk1.8/bin/java \
+    && chmod +x /opt/maven/bin/mvn \
+    && chmod +x /opt/python3/3.13/bin/python3.13 \
+    && chmod +x /opt/python3/3.13/bin/pip3.13 \
+    && chmod +x /opt/nodejs/node24/bin/node
 
 
 
