@@ -64,12 +64,14 @@ RUN ln -s /opt/java/jdk21/bin/java /usr/local/bin/java \
     && ln -sf /opt/python3/3.13/bin/python3.13 /usr/local/bin/python3.13 \
     && ln -sf /opt/python3/3.13/bin/pip3.13 /usr/local/bin/pip3.13 \
     && ln -sf /opt/nodejs/node24/bin/node /usr/local/bin/node \
+    && ln -sf /opt/nodejs/node24/bin/npm /usr/local/bin/npm \
     && chmod +x /opt/java/jdk21/bin/java \
     && chmod +x /opt/java/jdk1.8/bin/java \
     && chmod +x /opt/maven/bin/mvn \
     && chmod +x /opt/python3/3.13/bin/python3.13 \
     && chmod +x /opt/python3/3.13/bin/pip3.13 \
-    && chmod +x /opt/nodejs/node24/bin/node
+    && chmod +x /opt/nodejs/node24/bin/node \
+    && chmod +x /opt/nodejs/node24/bin/npm
 
 
 
