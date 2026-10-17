@@ -58,12 +58,12 @@ COPY ./settings.xml /root/.m2/
 COPY ./node24/ /opt/nodejs/node24/
 
 RUN ln -s /opt/java/jdk21/bin/java /usr/local/bin/java \
-    && ln -s /opt/java/jdk21/bin/java /usr/local/bin/java21 \
-    && ln -s /opt/java/jdk1.8/bin/java /usr/local/bin/java8 \
-    && ln -s /opt/maven/bin/mvn /usr/local/bin/mvn \
-    && ln -s /opt/python3/3.13/bin/python3.13 /usr/local/bin/python3.13 \
-    && ln -s /opt/python3/3.13/bin/pip3.13 /usr/local/bin/pip3.13 \
-    && ln -s /opt/nodejs/node24/bin/node /usr/local/bin/node \
+    && ln -sf /opt/java/jdk21/bin/java /usr/local/bin/java21 \
+    && ln -sf /opt/java/jdk1.8/bin/java /usr/local/bin/java8 \
+    && ln -sf /opt/maven/bin/mvn /usr/local/bin/mvn \
+    && ln -sf /opt/python3/3.13/bin/python3.13 /usr/local/bin/python3.13 \
+    && ln -sf /opt/python3/3.13/bin/pip3.13 /usr/local/bin/pip3.13 \
+    && ln -sf /opt/nodejs/node24/bin/node /usr/local/bin/node \
     && chmod +x /opt/java/jdk21/bin/java \
     && chmod +x /opt/java/jdk1.8/bin/java \
     && chmod +x /opt/maven/bin/mvn \
