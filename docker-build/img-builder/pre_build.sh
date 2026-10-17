@@ -24,8 +24,8 @@ pre_build() {
     wget "http://public:Public123@${RESOURCE_IP}:8824/toolchain/cmake-3.31.12.tar.gz"
 
     echo "下载node24"
-    wget "http://public:Public123@${RESOURCE_IP}:8824/nodejs/node24-${arch}.zip"
-    unzip node24-${arch}.zip
+    wget "http://public:Public123@${RESOURCE_IP}:8824/nodejs/node24-${arch}.tar.gz"
+    tar xvf node24-${arch}.tar.gz
     cd ..
 
 }
