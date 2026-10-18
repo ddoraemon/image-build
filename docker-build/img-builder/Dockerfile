@@ -12,6 +12,14 @@ RUN apt update \
      g++-12 \
      gcc \
      g++ \
+     patch \
+     bzip2 \
+     libc6-dev \
+     zlib1g-dev \
+     libdb-dev \
+     libgdbm-dev \
+     libbz2-dev \
+     libssl-dev \
   && apt install -y ca-certificates curl
 
 RUN ssh-keyscan -p 50832 gitea.rotigue.cn > /root/.ssh/known_hosts \
@@ -31,6 +39,22 @@ RUN install -m 0755 -d /etc/apt/keyrings \
 RUN apt update \
   && apt install -y docker-ce-cli \
   && rm -rf /var/lib/apt/lists/*
+
+# 安装perl5.16.3
+ENV PERLBREW_ROOT=/opt/perl5
+ENV PATH=/opt/perl5/perls/perl-5.16.3/bin:$PATH
+
+RUN curl -kL https://install.perlbrew.pl | bash \
+    && . /opt/perl5/etc/bashrc \
+    && perlbrew install perl-5.16.3 \
+       --name=perl-5.16.3 \
+       -Dcc=gcc-12 \
+       -Dccflags="-fcommon" \
+       -Dno-makedepend \
+       --notest \
+    && perlbrew switch perl-5.16.3 \
+    && perlbrew install-cpanm
+
 
 RUN mkdir -p /root/.ssh \
   && chmod 700 /root/.ssh \
