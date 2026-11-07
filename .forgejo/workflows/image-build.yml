@@ -134,6 +134,8 @@ jobs:
           retry docker pull ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
           docker tag ${{ vars.TXYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64 ${{ vars.ALIYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
           retry docker push ${{ vars.ALIYUN_DOCKER_REGISTRY }}/rotigue/${{ inputs.REPO_NAME }}:${{ inputs.TAG }}-arm64
+          docker system prune -af
+          docker builder prune -af
 
   manifest-yun:
     needs:
